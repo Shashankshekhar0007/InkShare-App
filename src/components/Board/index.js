@@ -1,35 +1,45 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useLayoutEffect } from "react";
 import rough from "roughjs";
 import boardContext from "../../store/boardContext";
+import { TOOL_ACTION_TYPES } from "../../constants";
 
 
 function Board() {
   const canvasRef = useRef();
-  const { elements } = useContext(boardContext);
+  const { elements, boardMouseDownHandler, boardMouseMoveHandler, boardMouseUpHandler, toolActionType } = useContext(boardContext);
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }, []);
 
-  const handleMouseDown = (event) => {
-    const clientx = event.clientX;
-    const clienty = event.clientY;
-    console.log(clientx, clienty);
+  const handleMouseUp = () => {
+    boardMouseUpHandler();
   };
-
-  useEffect(() => {
+  const handleMouseDown = (event) => {
+    boardMouseDownHandler(event);
+  };
+  const handleMouseMove = (event) => {
+    if (toolActionType === TOOL_ACTION_TYPES.DRAWING) {
+      boardMouseMoveHandler(event);
+    }
+  };
+  useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    // const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d");
+    context.save();
     const roughCanvas = rough.canvas(canvas);
-    const generator = roughCanvas.generator;
-    let rect1 = generator.rectangle(100, 100, 200, 100);
-    roughCanvas.draw(rect1);
-  }, []);
+    elements.forEach((element) => {
+      roughCanvas.draw(element.roughEle);
+    });
+    return () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    };
+  }, [elements]);
 
   return (
     <>
-      <canvas ref={canvasRef} onMouseDown={handleMouseDown} />
+      <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} />
     </>
   );
 }

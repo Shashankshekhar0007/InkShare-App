@@ -1,10 +1,10 @@
 import Board from "./components/Board/index";
-import Toolbox from "./components/Toolbox/index";
+import Toolbar from "./components/Toolbar/index";
 import BoardProvider from "./store/BoardProvider";
 function App() {
   return (
     <BoardProvider>
-      <Toolbox />
+      <Toolbar />
       <Board />
     </BoardProvider>
   );
