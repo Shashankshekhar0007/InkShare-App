@@ -7,7 +7,7 @@ import { getSvgPathFromStroke } from "../../utils/elements";
 import getStroke from "perfect-freehand";
 function Board() {
   const canvasRef = useRef();
-  const { elements, boardMouseDownHandler, boardMouseMoveHandler, boardMouseUpHandler, toolActionType } = useContext(boardContext);
+  const { elements, boardMouseDownHandler, boardMouseMoveHandler, boardMouseUpHandler } = useContext(boardContext);
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
@@ -21,9 +21,7 @@ function Board() {
     boardMouseDownHandler(event, toolboxState);
   };
   const handleMouseMove = (event) => {
-    if (toolActionType === TOOL_ACTION_TYPES.DRAWING) {
-      boardMouseMoveHandler(event);
-    }
+    boardMouseMoveHandler(event);
   };
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -62,7 +60,12 @@ function Board() {
 
   return (
     <>
-      <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} />
+      <canvas ref={canvasRef}
+        id="canvas"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      />
     </>
   );
 }
