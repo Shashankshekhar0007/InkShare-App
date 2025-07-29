@@ -5,9 +5,16 @@ import { TOOL_ACTION_TYPES, TOOL_ITEMS } from "../../constants";
 import toolboxContext from "../../store/toolbox-context";
 import { getSvgPathFromStroke } from "../../utils/elements";
 import getStroke from "perfect-freehand";
+import classes from "./index.module.css";
 function Board() {
   const canvasRef = useRef();
-  const { elements, boardMouseDownHandler, boardMouseMoveHandler, boardMouseUpHandler } = useContext(boardContext);
+  const textAreaRef = useRef();
+  const { elements,
+    boardMouseDownHandler,
+    boardMouseMoveHandler,
+    boardMouseUpHandler,
+    toolActionType,
+    textAreaBlurHandler } = useContext(boardContext);
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
@@ -16,9 +23,6 @@ function Board() {
   const { toolboxState } = useContext(toolboxContext);
   const handleMouseUp = () => {
     boardMouseUpHandler();
-  };
-  const handleMouseDown = (event) => {
-    boardMouseDownHandler(event, toolboxState);
   };
   const handleMouseMove = (event) => {
     boardMouseMoveHandler(event);
@@ -42,13 +46,13 @@ function Board() {
           context.fill(path);
           context.restore();
           break;
-        // case TOOL_ITEMS.TEXT:
-        //   context.textBaseline = "top";
-        //   context.font = `${element.size}px Caveat`;
-        //   context.fillStyle = element.stroke;
-        //   context.fillText(element.text, element.x1, element.y1);
-        //   context.restore();
-        //   break;
+        case TOOL_ITEMS.TEXT:
+          context.textBaseline = "top";
+          context.font = `${element.size}px Caveat`;
+          context.fillStyle = element.stroke;
+          context.fillText(element.text, element.x1, element.y1);
+          context.restore();
+          break;
         default:
           throw new Error("Type not recognized");
       }
@@ -58,8 +62,31 @@ function Board() {
     };
   }, [elements]);
 
+  useEffect(() => {
+    const textarea = textAreaRef.current;
+    if (toolActionType === TOOL_ACTION_TYPES.WRITING) {
+      setTimeout(() => {
+        textarea.focus();
+      }, 0);
+    }
+  }, [toolActionType]);
+  const handleMouseDown = (event) => {
+    boardMouseDownHandler(event, toolboxState);
+  };
   return (
     <>
+      {toolActionType === TOOL_ACTION_TYPES.WRITING && (<textarea
+        type="text"
+        ref={textAreaRef}
+        className={classes.textElementBox}
+        style={{
+          top: elements[elements.length - 1].y1,
+          left: elements[elements.length - 1].x1,
+          fontSize: `${elements[elements.length - 1]?.size}px`,
+          color: elements[elements.length - 1]?.stroke,
+        }}
+        onBlur={(event) => textAreaBlurHandler(event.target.value, toolboxState)}
+      />)}
       <canvas ref={canvasRef}
         id="canvas"
         onMouseDown={handleMouseDown}

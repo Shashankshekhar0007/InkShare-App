@@ -15,7 +15,7 @@ const boardReducer = (state, action) => {
         { type: state.activetoolItem, stroke, fill, size });
       return {
         ...state,
-        toolActionType: TOOL_ACTION_TYPES.DRAWING,
+        toolActionType: state.activetoolItem === TOOL_ITEMS.TEXT ? TOOL_ACTION_TYPES.WRITING : TOOL_ACTION_TYPES.DRAWING,
         elements: [...state.elements, newelement],
       };
     }
@@ -63,11 +63,24 @@ const boardReducer = (state, action) => {
           throw new Error("Type not recognized");
       }
     }
+    case BOARD_ACTIONS.CHANGE_TEXT: {
+      const index = state.elements.length - 1;
+      const newElements = [...state.elements];
+      newElements[index].text = action.payload.text;
+      const newHistory = state.history.slice(0, state.index + 1);
+      newHistory.push(newElements);
+      return {
+        ...state,
+        toolActionType: TOOL_ACTION_TYPES.NONE,
+        elements: newElements,
+        history: newHistory,
+        index: state.index + 1,
+      };
+    }
     case BOARD_ACTIONS.ERASE: {
       const { clientX, clientY } = action.payload;
       let newElements = [...state.elements];
       newElements = newElements.filter((element) => {
-        // console.log("filter called");
         return !PointNearElement(element, clientX, clientY);
       });
       return {
@@ -82,6 +95,9 @@ const initialboardstate = {
   toolActionType: TOOL_ACTION_TYPES.NONE,
   activetoolItem: TOOL_ITEMS.LINE,
   elements: [],
+  history: [[]],
+  index: 0,
+  // canvasId: "",
 }
 const BoardProvider = ({ children }) => {
   const [boardState, dispatchBoardAction] = useReducer(boardReducer, initialboardstate);
@@ -116,9 +132,19 @@ const BoardProvider = ({ children }) => {
       }
     })
   };
-
+  const textAreaBlurHandler = (text, toolboxState) => {
+    dispatchBoardAction({
+      type: BOARD_ACTIONS.CHANGE_TEXT,
+      payload: {
+        text,
+        stroke: toolboxState[boardState.activetoolItem]?.stroke,
+        size: toolboxState[boardState.activetoolItem]?.size,
+      },
+    });
+  };
 
   const boardMouseUpHandler = () => {
+    if (boardState.toolActionType === TOOL_ACTION_TYPES.WRITING) return;
     dispatchBoardAction({
       type: BOARD_ACTIONS.CHANGE_ACTION_TYPE,
       payload: {
@@ -127,6 +153,9 @@ const BoardProvider = ({ children }) => {
     })
   };
   const boardMouseMoveHandler = (event) => {
+    if (boardState.toolActionType === TOOL_ACTION_TYPES.WRITING) {
+      return;
+    }
     const { clientX, clientY } = event;
     if (boardState.toolActionType === TOOL_ACTION_TYPES.DRAWING) {
       dispatchBoardAction({
@@ -157,6 +186,7 @@ const BoardProvider = ({ children }) => {
     boardMouseDownHandler,
     boardMouseMoveHandler,
     boardMouseUpHandler,
+    textAreaBlurHandler,
   }
 
   return (

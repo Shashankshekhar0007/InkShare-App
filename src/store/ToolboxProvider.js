@@ -44,7 +44,11 @@ const initialtoolboxState = {
   },
   [TOOL_ITEMS.BRUSH]: {
     stroke: COLORS.BLACK,
-    // size: 1,
+    // size: 1,s
+  },
+  [TOOL_ITEMS.TEXT]: {
+    stroke: COLORS.BLACK,
+    size: 24,
   }
 }
 

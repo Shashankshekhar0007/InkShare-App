@@ -7,6 +7,7 @@ import {
   FaArrowRight,
   FaPaintBrush,
   FaEraser,
+  FaFont,
 } from "react-icons/fa";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import boardContext from "../../store/boardContext";
@@ -21,6 +22,7 @@ const Toolbar = () => {
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.CIRCLE })} onClick={() => { changeToolHandler(TOOL_ITEMS.CIRCLE) }}><FaRegCircle /></div>
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.ARROW })} onClick={() => { changeToolHandler(TOOL_ITEMS.ARROW) }}><FaArrowRight /></div>
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.ERASER })} onClick={() => { changeToolHandler(TOOL_ITEMS.ERASER) }}><FaEraser /></div>
+    <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.TEXT })} onClick={() => { changeToolHandler(TOOL_ITEMS.TEXT) }}><FaFont /></div>
   </div>;
 };
 
