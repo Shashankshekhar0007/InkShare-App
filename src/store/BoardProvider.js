@@ -83,9 +83,39 @@ const boardReducer = (state, action) => {
       newElements = newElements.filter((element) => {
         return !PointNearElement(element, clientX, clientY);
       });
+      const newHistory = state.history.slice(0, state.index + 1);
+      newHistory.push(newElements);
       return {
         ...state,
         elements: newElements,
+        history: newHistory,
+        index: state.index + 1,
+      };
+    }
+    case BOARD_ACTIONS.DRAW_UP: {
+      const elementsCopy = [...state.elements];
+      const newHistory = state.history.slice(0, state.index + 1);
+      newHistory.push(elementsCopy);
+      return {
+        ...state,
+        history: newHistory,
+        index: state.index + 1,
+      };
+    }
+    case BOARD_ACTIONS.UNDO: {
+      if (state.index <= 0) return state;
+      return {
+        ...state,
+        elements: state.history[state.index - 1],
+        index: state.index - 1,
+      };
+    }
+    case BOARD_ACTIONS.REDO: {
+      if (state.index >= state.history.length - 1) return state;
+      return {
+        ...state,
+        elements: state.history[state.index + 1],
+        index: state.index + 1,
       };
     }
     default: return state;
@@ -145,6 +175,11 @@ const BoardProvider = ({ children }) => {
 
   const boardMouseUpHandler = () => {
     if (boardState.toolActionType === TOOL_ACTION_TYPES.WRITING) return;
+    if (boardState.toolActionType === TOOL_ACTION_TYPES.DRAWING) {
+      dispatchBoardAction({
+        type: BOARD_ACTIONS.DRAW_UP,
+      });
+    }
     dispatchBoardAction({
       type: BOARD_ACTIONS.CHANGE_ACTION_TYPE,
       payload: {
@@ -178,6 +213,16 @@ const BoardProvider = ({ children }) => {
     }
   };
 
+  const boardUndohandler = () => {
+    dispatchBoardAction({
+      type: BOARD_ACTIONS.UNDO,
+    })
+  };
+  const boardRedohandler = () => {
+    dispatchBoardAction({
+      type: BOARD_ACTIONS.REDO,
+    })
+  };
   const boardContextValue = {
     activetoolItem: boardState.activetoolItem,
     elements: boardState.elements,
@@ -187,8 +232,9 @@ const BoardProvider = ({ children }) => {
     boardMouseMoveHandler,
     boardMouseUpHandler,
     textAreaBlurHandler,
+    undo: boardUndohandler,
+    redo: boardRedohandler,
   }
-
   return (
     <boardContext.Provider value={boardContextValue}>
       {children}

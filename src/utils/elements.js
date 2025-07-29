@@ -107,7 +107,9 @@ export const PointNearElement = (element, pointX, pointY) => {
       const textHeight = parseInt(element.size);
       context.restore();
       return (
-        isPointCloseToLine(x1, y1, x1 + textWidth, y1, pointX, pointY) ||
+        isPointCloseToLine(
+          x1, y1, x1 + textWidth, y1, pointX, pointY
+        ) ||
         isPointCloseToLine(
           x1 + textWidth,
           y1,
@@ -124,7 +126,8 @@ export const PointNearElement = (element, pointX, pointY) => {
           pointX,
           pointY
         ) ||
-        isPointCloseToLine(x1, y1 + textHeight, x1, y1, pointX, pointY)
+        isPointCloseToLine(
+          x1, y1 + textHeight, x1, y1, pointX, pointY)
       );
     default:
       throw new Error("Type not recognized");
