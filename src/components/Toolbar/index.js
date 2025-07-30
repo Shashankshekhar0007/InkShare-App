@@ -10,13 +10,21 @@ import {
   FaFont,
   FaUndoAlt,
   FaRedoAlt,
+  FaDownload,
 } from "react-icons/fa";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import boardContext from "../../store/boardContext";
 import { TOOL_ITEMS } from "../../constants";
 const Toolbar = () => {
   const { activetoolItem, changeToolHandler, undo, redo } = useContext(boardContext);
-
+  const handleDownloadClick = () => {
+    const canvas = document.getElementById("canvas");
+    const data = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = data;
+    link.download = "InkShare.png";
+    link.click();
+  }
   return <div className={classes.container}>
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.BRUSH })} onClick={() => { changeToolHandler(TOOL_ITEMS.BRUSH) }}><FaPaintBrush /></div>
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.LINE })} onClick={() => { changeToolHandler(TOOL_ITEMS.LINE) }}><FaSlash /></div>
@@ -27,6 +35,7 @@ const Toolbar = () => {
     <div className={cx(classes.toolItem, { [classes.active]: activetoolItem === TOOL_ITEMS.TEXT })} onClick={() => { changeToolHandler(TOOL_ITEMS.TEXT) }}><FaFont /></div>
     <div className={classes.toolItem} onClick={() => { undo() }}><FaUndoAlt /></div>
     <div className={classes.toolItem} onClick={() => { redo() }}><FaRedoAlt /></div>
+    <div className={classes.toolItem} onClick={handleDownloadClick}><FaDownload /></div>
   </div>;
 };
 
