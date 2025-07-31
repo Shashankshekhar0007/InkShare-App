@@ -167,8 +167,6 @@ const BoardProvider = ({ children }) => {
       type: BOARD_ACTIONS.CHANGE_TEXT,
       payload: {
         text,
-        stroke: toolboxState[boardState.activetoolItem]?.stroke,
-        size: toolboxState[boardState.activetoolItem]?.size,
       },
     });
   };
