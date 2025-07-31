@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useCallback, useReducer } from "react";
 import boardContext from "./boardContext";
 import { TOOL_ITEMS, BOARD_ACTIONS, TOOL_ACTION_TYPES } from "../constants";
 import { createRoughElement, getSvgPathFromStroke, PointNearElement } from "../utils/elements";
@@ -213,16 +213,16 @@ const BoardProvider = ({ children }) => {
     }
   };
 
-  const boardUndohandler = () => {
+  const boardUndohandler = useCallback(() => {
     dispatchBoardAction({
       type: BOARD_ACTIONS.UNDO,
-    })
-  };
-  const boardRedohandler = () => {
+    });
+  }, []);
+  const boardRedohandler = useCallback(() => {
     dispatchBoardAction({
       type: BOARD_ACTIONS.REDO,
-    })
-  };
+    });
+  }, []);
   const boardContextValue = {
     activetoolItem: boardState.activetoolItem,
     elements: boardState.elements,

@@ -14,12 +14,15 @@ function Board() {
     boardMouseMoveHandler,
     boardMouseUpHandler,
     toolActionType,
-    textAreaBlurHandler } = useContext(boardContext);
+    textAreaBlurHandler,
+    undo,
+    redo, } = useContext(boardContext);
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }, []);
+
   const { toolboxState } = useContext(toolboxContext);
   const handleMouseUp = () => {
     boardMouseUpHandler();
@@ -63,6 +66,21 @@ function Board() {
   }, [elements]);
 
   useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "z" && event.ctrlKey) {
+        undo();
+      }
+      else if (event.key === "y" && event.ctrlKey) {
+        redo();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [undo, redo]);
+
+  useEffect(() => {
     const textarea = textAreaRef.current;
     if (toolActionType === TOOL_ACTION_TYPES.WRITING) {
       setTimeout(() => {
@@ -73,6 +91,8 @@ function Board() {
   const handleMouseDown = (event) => {
     boardMouseDownHandler(event, toolboxState);
   };
+
+
   return (
     <>
       {toolActionType === TOOL_ACTION_TYPES.WRITING && (<textarea
