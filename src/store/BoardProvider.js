@@ -216,11 +216,22 @@ const BoardProvider = ({ children }) => {
       type: BOARD_ACTIONS.UNDO,
     });
   }, []);
+
   const boardRedohandler = useCallback(() => {
     dispatchBoardAction({
       type: BOARD_ACTIONS.REDO,
     });
   }, []);
+
+  const setUserLoginStatus = (isUserLoggedIn) => {
+    dispatchBoardAction({
+      type: BOARD_ACTIONS.SET_USER_LOGIN_STATUS,
+      payload: {
+        isUserLoggedIn,
+      },
+    })
+  }
+
   const boardContextValue = {
     activetoolItem: boardState.activetoolItem,
     elements: boardState.elements,
@@ -232,6 +243,7 @@ const BoardProvider = ({ children }) => {
     textAreaBlurHandler,
     undo: boardUndohandler,
     redo: boardRedohandler,
+    setUserLoginStatus
   }
   return (
     <boardContext.Provider value={boardContextValue}>

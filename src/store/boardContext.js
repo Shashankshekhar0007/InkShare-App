@@ -10,5 +10,6 @@ const boardContext = createContext({
   boardMouseDownHandler: () => { },
   boardMouseMoveHandler: () => { },
   boardMouseUpHandler: () => { },
+  setUserLoginStatus: () => { },
 });
 export default boardContext;
