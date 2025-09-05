@@ -1,14 +1,20 @@
-import { useContext, useEffect, useRef, useLayoutEffect } from "react";
+import { useContext, useEffect, useRef, useLayoutEffect, useState } from "react";
 import rough from "roughjs";
 import boardContext from "../../store/boardContext";
 import { TOOL_ACTION_TYPES, TOOL_ITEMS } from "../../constants";
 import toolboxContext from "../../store/toolbox-context";
 import { getSvgPathFromStroke } from "../../utils/elements";
 import getStroke from "perfect-freehand";
+import socket from "../../utils/socket";
+
 import classes from "./index.module.css";
-function Board() {
+import axios from "axios";
+
+function Board(id) {
   const canvasRef = useRef();
   const textAreaRef = useRef();
+  console.log(id);
+
   const { elements,
     boardMouseDownHandler,
     boardMouseMoveHandler,
@@ -16,20 +22,74 @@ function Board() {
     toolActionType,
     textAreaBlurHandler,
     undo,
-    redo, } = useContext(boardContext);
+    redo,
+    setCanvasId,
+    setElements,
+    setHistory
+  } = useContext(boardContext);
+
+  const { toolboxState } = useContext(toolboxContext);
+
+  const token = localStorage.getItem("whiteboard_user_token");
+
+  const [isAuthorized, setIsAuthorized] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      // Join the canvas room (no need for userId)
+      socket.emit("joinCanvas", { canvasId: id });
+
+      // Listen for updates from other users
+      socket.on("receiveDrawingUpdate", (updatedElements) => {
+        setElements(updatedElements);
+      });
+
+      // Load initial canvas data
+      socket.on("loadCanvas", (initialElements) => {
+        setElements(initialElements);
+      });
+
+      socket.on("unauthorized", (data) => {
+        console.log(data.message);
+        alert("Access Denied: You cannot edit this canvas.");
+        setIsAuthorized(false);
+      });
+
+      return () => {
+        socket.off("receiveDrawingUpdate");
+        socket.off("loadCanvas");
+        socket.off("unauthorized");
+      };
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const fetchCanvasData = async () => {
+      if (id && token) {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/canvas/load/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setCanvasId(id); // Set the current canvas ID
+          setElements(response.data.elements); // Set the fetched elements
+          setHistory(response.data.elements); // Set the fetched elements
+        } catch (error) {
+          console.error("Error loading canvas:", error);
+        } finally {
+        }
+      }
+    };
+
+    fetchCanvasData();
+  }, [id, token]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }, []);
 
-  const { toolboxState } = useContext(toolboxContext);
-  const handleMouseUp = () => {
-    boardMouseUpHandler();
-  };
-  const handleMouseMove = (event) => {
-    boardMouseMoveHandler(event);
-  };
+
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
@@ -49,13 +109,32 @@ function Board() {
           context.fill(path);
           context.restore();
           break;
-        case TOOL_ITEMS.TEXT:
+        case TOOL_ITEMS.TEXT: {
           context.textBaseline = "top";
-          context.font = `${element.size}px Caveat`;
+          context.font = `${element.size}px Oswald, sans-serif`;
           context.fillStyle = element.stroke;
-          context.fillText(element.text, element.x1, element.y1);
+
+          const maxWidth = 600; // max pixel width for one line
+          const words = element.text.split(" ");
+          let line = "";
+          let y = element.y1;
+
+          for (let i = 0; i < words.length; i++) {
+            let testLine = line + words[i] + " ";
+            let testWidth = context.measureText(testLine).width;
+
+            if (testWidth > maxWidth) {
+              context.fillText(line, element.x1, y);
+              line = words[i] + " ";
+              y += element.size * 1.2; // line spacing
+            } else {
+              line = testLine;
+            }
+          }
+          context.fillText(line, element.x1, y);
           context.restore();
           break;
+        }
         default:
           throw new Error("Type not recognized");
       }
@@ -88,10 +167,23 @@ function Board() {
       }, 0);
     }
   }, [toolActionType]);
+
   const handleMouseDown = (event) => {
+    if (!isAuthorized) return;
     boardMouseDownHandler(event, toolboxState);
   };
 
+  const handleMouseUp = () => {
+    if (!isAuthorized) return;
+    boardMouseUpHandler();
+    socket.emit("drawingUpdate", { canvasId: id, elements });
+  };
+
+  const handleMouseMove = (event) => {
+    if (!isAuthorized) return;
+    boardMouseMoveHandler(event);
+    socket.emit("drawingUpdate", { canvasId: id, elements });
+  };
 
   return (
     <>

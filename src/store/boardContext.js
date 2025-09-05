@@ -1,6 +1,8 @@
 import { createContext } from "react";
 
 const boardContext = createContext({
+  isUserLoggedIn: false,
+  canvasId: "",
   activetoolItem: "",
   elements: [],
   toolActionType: "",
@@ -11,5 +13,8 @@ const boardContext = createContext({
   boardMouseMoveHandler: () => { },
   boardMouseUpHandler: () => { },
   setUserLoginStatus: () => { },
+  setElements: () => { },
+  setCanvasId: () => { },
+  setHistory: () => { }
 });
 export default boardContext;

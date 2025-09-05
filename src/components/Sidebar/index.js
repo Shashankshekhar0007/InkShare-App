@@ -4,7 +4,7 @@ import './index.min.css';
 import { useNavigate } from 'react-router-dom';
 import boardContext from '../../store/boardContext';
 import { useParams } from 'react-router-dom';
-
+import { jwtDecode } from 'jwt-decode';
 
 const Sidebar = () => {
   const [canvases, setCanvases] = useState([]);
@@ -67,7 +67,7 @@ const Sidebar = () => {
 
   const handleDeleteCanvas = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/canvas/delete/:id${id}`, {
+      await axios.delete(`http://localhost:5000/api/canvas/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchCanvases();
@@ -104,7 +104,7 @@ const Sidebar = () => {
       setSuccess(""); // Clear previous success message
 
       const response = await axios.put(
-        `http://localhost:5000/api/canvas/share/:id${canvasId}`,
+        `http://localhost:5000/api/canvas/share/${canvasId}`,
         { email },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -122,7 +122,20 @@ const Sidebar = () => {
       }, 5000);
     }
   };
-
+  const getUsernameFromToken = () => {
+    const token = localStorage.getItem("whiteboard_user_token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        console.log("Decoded token:", decoded);
+        return decoded.username || "";
+      } catch (err) {
+        console.error("Error decoding token:", err);
+        return "";
+      }
+    }
+    return "";
+  };
   return (
     <div className="sidebar">
       <button
@@ -131,6 +144,12 @@ const Sidebar = () => {
         disabled={!isUserLoggedIn}
       >
         + Create New Canvas
+      </button>
+      <button
+        className="create-button"
+        disabled={!isUserLoggedIn}
+      >
+        {getUsernameFromToken() || "Account"}
       </button>
       <ul className="canvas-list">
         {canvases.map(canvas => (

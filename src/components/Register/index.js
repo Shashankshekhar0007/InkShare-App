@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import styles from './index.module.css';
 
 const Register = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,7 +21,8 @@ const Register = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        // Include username in the request payload
+        body: JSON.stringify({ username, email, password }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -39,6 +41,13 @@ const Register = () => {
     <div className={styles.registerContainer}>
       <h2>Register</h2>
       <form onSubmit={handleSubmit} className={styles.registerForm}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
         <input
           type="email"
           placeholder="Email"
