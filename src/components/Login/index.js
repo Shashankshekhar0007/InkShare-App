@@ -21,13 +21,21 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('whiteboard_user_token', data.token);
+      // if (response.ok) {
+      //   localStorage.setItem('whiteboard_user_token', data.token);
 
+      //   setUserLoginStatus(true);
+      //   console.log("Login successful, token stored.");
+      //   navigate('/home');
+      // } 
+      if (response.ok) {
+        console.log("Full login response:", data);   // check token is there
+        localStorage.setItem("whiteboard_user_token", data.token);
+        console.log("Token after storing:", localStorage.getItem("whiteboard_user_token"));
         setUserLoginStatus(true);
-        console.log("Login successful, token stored.");
-        navigate('/home');
-      } else {
+        navigate("/home");
+      }
+      else {
         alert(data.message || 'Login failed');
       }
     } catch (error) {
