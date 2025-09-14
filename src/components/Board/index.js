@@ -10,7 +10,7 @@ import socket from "../../utils/socket";
 import classes from "./index.module.css";
 import axios from "axios";
 
-function Board(id) {
+function Board({ id }) {
   const canvasRef = useRef();
   const textAreaRef = useRef();
   console.log(id);
